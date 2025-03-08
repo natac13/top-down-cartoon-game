@@ -18,6 +18,13 @@ function main() {
 
   c.fillStyle = "white";
   c.fillRect(0, 0, canvas.width, canvas.height);
+
+  const backgroundImage = new Image();
+  backgroundImage.src = "/public/Pellet Town.png";
+  backgroundImage.loading = "eager";
+  backgroundImage.onload = () => {
+    c.drawImage(backgroundImage, -750, -550);
+  };
 }
 
 main();

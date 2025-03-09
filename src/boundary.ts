@@ -1,3 +1,5 @@
+import { create2DMap } from './create-2d-map'
+
 interface BoundaryProps {
 	position: {
 		x: number
@@ -27,19 +29,6 @@ export class Boundary {
 	}
 }
 
-function createCollisionsMap(
-	collisions: number[],
-	map: {
-		width: number
-	},
-): number[][] {
-	const collisionsMap = []
-	for (let i = 0; i < collisions.length; i += map.width) {
-		collisionsMap.push(collisions.slice(i, i + map.width))
-	}
-	return collisionsMap
-}
-
 export function createBoundaries(
 	collisions: number[],
 	offset: {
@@ -50,7 +39,7 @@ export function createBoundaries(
 		width: number
 	},
 ): Array<Boundary> {
-	const collisionsMap = createCollisionsMap(collisions, mapTiles)
+	const collisionsMap = create2DMap(collisions, mapTiles)
 
 	const boundaries: Boundary[] = []
 	for (let i = 0; i < collisionsMap.length; i++) {

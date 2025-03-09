@@ -1,4 +1,6 @@
+import { createBattleZones } from './battle-zones'
 import { createBoundaries } from './boundary'
+import { battleZonesData } from './data/battleZones'
 import { collisions } from './data/collisions'
 import { rectangularCollision } from './rectangular-collision'
 import { getGameCanvas, setupCanvas } from './setup-canvas'
@@ -7,6 +9,7 @@ import './style.css'
 
 const MAP_WIDTH_TILES = 70
 const MAP_HEIGHT_TILES = 40
+const BATTLE_RATE = 0.1
 const OFFSET = {
 	x: -735,
 	y: -640,
@@ -21,6 +24,9 @@ function main() {
 	const c = setupCanvas(canvas)
 
 	const boundaries = createBoundaries(collisions, OFFSET, {
+		width: MAP_WIDTH_TILES,
+	})
+	const battleZones = createBattleZones(battleZonesData, OFFSET, {
 		width: MAP_WIDTH_TILES,
 	})
 
@@ -92,7 +98,12 @@ function main() {
 		},
 	}
 
-	const movables = [backgroundSprite, foregroundSprite, ...boundaries]
+	const movables = [
+		backgroundSprite,
+		foregroundSprite,
+		...boundaries,
+		...battleZones,
+	]
 	// animate
 	function animate(c: CanvasRenderingContext2D) {
 		// rendering
@@ -100,8 +111,41 @@ function main() {
 		for (const boundary of boundaries) {
 			boundary.draw(c)
 		}
+		for (const battleZone of battleZones) {
+			battleZone.draw(c)
+		}
 		player.draw(c)
 		foregroundSprite.draw(c)
+
+		// battle zone detection
+		if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
+			for (let i = 0; i < battleZones.length; i++) {
+				const battleZone = battleZones[i]
+
+				const overlappingArea =
+					(Math.min(
+						player.position.x + player.width,
+						battleZone.position.x + battleZone.width,
+					) -
+						Math.max(player.position.x, battleZone.position.x)) *
+					(Math.min(
+						player.position.y + player.height,
+						battleZone.position.y + battleZone.height,
+					) -
+						Math.max(player.position.y, battleZone.position.y))
+				if (
+					rectangularCollision({
+						s1: player,
+						s2: battleZone,
+					}) &&
+					overlappingArea > (player.width * player.height) / 2 &&
+					Math.random() < BATTLE_RATE
+				) {
+					console.log('battleZone')
+					break
+				}
+			}
+		}
 
 		// collision detection
 		let moving = true
@@ -128,6 +172,7 @@ function main() {
 					break
 				}
 			}
+
 			if (moving) {
 				for (const movable of movables) {
 					movable.position.y += 3

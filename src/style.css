@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme {
+  --serif-font: "Press Start 2P", serif;
+}
+
+:root {
+  --font-serif: var(--serif-font);
+}

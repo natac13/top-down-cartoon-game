@@ -1,3 +1,4 @@
+import { animate } from 'motion'
 import { createBattleZones } from './battle-zones'
 import { createBoundaries } from './boundary'
 import { battleZonesData } from './data/battleZones'
@@ -9,7 +10,7 @@ import './style.css'
 
 const MAP_WIDTH_TILES = 70
 const MAP_HEIGHT_TILES = 40
-const BATTLE_RATE = 0.1
+const BATTLE_RATE = 0.05
 const OFFSET = {
 	x: -735,
 	y: -640,
@@ -22,6 +23,10 @@ const PLAYER_IMG = {
 function main() {
 	const canvas = getGameCanvas()
 	const c = setupCanvas(canvas)
+
+	const overlappingDiv = document.getElementById(
+		'overlapping-div',
+	) as HTMLDivElement
 
 	const boundaries = createBoundaries(collisions, OFFSET, {
 		width: MAP_WIDTH_TILES,
@@ -77,6 +82,45 @@ function main() {
 		},
 	})
 
+	// Load battle zone image
+	const battleZoneImage = new Image()
+	battleZoneImage.src = '/public/battleBackground.png'
+	const battleBackgroundSprite = new Sprite({
+		image: battleZoneImage,
+		position: {
+			x: 0,
+			y: 0,
+		},
+	})
+
+	// Load Draggle image
+	const draggleImage = new Image()
+	draggleImage.src = '/public/draggleSprite.png'
+	const draggle = new Sprite({
+		image: draggleImage,
+		position: {
+			x: 800,
+			y: 100,
+		},
+		frames: { max: 4, hold: 15 },
+		animate: true,
+		isEnemy: true,
+	})
+
+	// Load Emby image
+	const embyImage = new Image()
+	embyImage.src = '/public/embySprite.png'
+	const emby = new Sprite({
+		image: embyImage,
+		position: {
+			x: 280,
+			y: 325,
+		},
+		frames: { max: 4, hold: 15 },
+		animate: true,
+		isEnemy: false,
+	})
+
 	// Set up a consistent 60 FPS loop
 	const FPS = 60
 	const FRAME_INTERVAL = 1000 / FPS
@@ -104,8 +148,12 @@ function main() {
 		...boundaries,
 		...battleZones,
 	]
+
+	const battle = {
+		initiated: false,
+	}
 	// animate
-	function animate(c: CanvasRenderingContext2D) {
+	function mainAnimation(c: CanvasRenderingContext2D, animationId: number) {
 		// rendering
 		backgroundSprite.draw(c)
 		for (const boundary of boundaries) {
@@ -116,6 +164,13 @@ function main() {
 		}
 		player.draw(c)
 		foregroundSprite.draw(c)
+
+		let moving = true
+		player.animate = false
+
+		if (battle.initiated) {
+			return
+		}
 
 		// battle zone detection
 		if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
@@ -141,18 +196,31 @@ function main() {
 					overlappingArea > (player.width * player.height) / 2 &&
 					Math.random() < BATTLE_RATE
 				) {
-					console.log('battleZone')
+					window.cancelAnimationFrame(animationId)
+
+					animate(
+						overlappingDiv,
+						{ opacity: 1 },
+						{
+							repeat: 6,
+							duration: 0.4,
+							ease: 'linear',
+							repeatType: 'mirror',
+							onComplete: () => {
+								battleGameLoop(0)
+								animate(overlappingDiv, { opacity: 0 })
+							},
+						},
+					)
+					battle.initiated = true
 					break
 				}
 			}
 		}
 
 		// collision detection
-		let moving = true
-		player.moving = false
-
 		if (keys.w.pressed && lastKey === 'w') {
-			player.moving = true
+			player.animate = true
 			player.image = player.sprites?.up || player.image
 			for (let i = 0; i < boundaries.length; i++) {
 				const boundary = boundaries[i]
@@ -180,7 +248,7 @@ function main() {
 			}
 		}
 		if (keys.a.pressed && lastKey === 'a') {
-			player.moving = true
+			player.animate = true
 			player.image = player.sprites?.left || player.image
 			for (let i = 0; i < boundaries.length; i++) {
 				const boundary = boundaries[i]
@@ -207,7 +275,7 @@ function main() {
 			}
 		}
 		if (keys.s.pressed && lastKey === 's') {
-			player.moving = true
+			player.animate = true
 			player.image = player.sprites?.down || player.image
 			for (let i = 0; i < boundaries.length; i++) {
 				const boundary = boundaries[i]
@@ -234,7 +302,7 @@ function main() {
 			}
 		}
 		if (keys.d.pressed && lastKey === 'd') {
-			player.moving = true
+			player.animate = true
 			player.image = player.sprites?.right || player.image
 			for (let i = 0; i < boundaries.length; i++) {
 				const boundary = boundaries[i]
@@ -262,25 +330,76 @@ function main() {
 		}
 	}
 
+	function battleAnimation(c: CanvasRenderingContext2D) {
+		console.log('battle')
+
+		battleBackgroundSprite.draw(c)
+		draggle.draw(c)
+		emby.draw(c)
+	}
+
+	function battleGameLoop(timestamp: number) {
+		if (!c) {
+			throw new Error('2D context not found')
+		}
+		requestAnimationFrame(battleGameLoop)
+		const deltaTime = timestamp - lastTime
+		if (deltaTime >= FRAME_INTERVAL) {
+			lastTime = timestamp - (deltaTime % FRAME_INTERVAL)
+			battleAnimation(c)
+		}
+	}
+
+	let mainAnimationId = 0
 	function gameLoop(timestamp: number) {
 		if (!c) {
 			throw new Error('2D context not found')
 		}
+		mainAnimationId = requestAnimationFrame(gameLoop)
+		console.log(`Animation ID: ${mainAnimationId}`)
 		const deltaTime = timestamp - lastTime
 
 		if (deltaTime >= FRAME_INTERVAL) {
 			lastTime = timestamp - (deltaTime % FRAME_INTERVAL)
 
-			animate(c)
+			mainAnimation(c, mainAnimationId)
+			// battleAnimation(c, mainAnimationId)
 		}
-
-		requestAnimationFrame(gameLoop)
 	}
 
 	// Start the game loop once images are loaded
 	backgroundImage.onload = () => {
-		requestAnimationFrame(gameLoop)
+		// requestAnimationFrame(gameLoop)
+		// TODO: remove this line
+		battleGameLoop(0)
 	}
+
+	const attack1Button = document.getElementById('attack-1') as HTMLButtonElement
+	const attack2Button = document.getElementById('attack-2') as HTMLButtonElement
+
+	attack1Button.addEventListener('click', () => {
+		console.log('Attack 1 clicked')
+
+		emby.attack({
+			attack: {
+				name: 'Tackle',
+				damage: 10,
+				type: 'Normal',
+			},
+			recipient: draggle,
+		})
+	})
+	attack2Button.addEventListener('click', () => {
+		console.log('Attack 2 clicked')
+		draggle.attack({
+			attack: {
+				name: 'Tackle',
+				damage: 10,
+				type: 'Normal',
+			},
+			recipient: emby,
+		})
+	})
 
 	window.addEventListener('keydown', (e) => {
 		const key = e.key

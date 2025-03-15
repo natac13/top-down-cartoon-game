@@ -14,34 +14,40 @@
 
 <body class="bg-black font-serif">
   <div class="inline-block relative bg-red-300">
-    <div id="overlapping-div" class="bg-black inset-0 absolute opacity-0"></div>
+    <div id="overlapping-div" class="bg-black inset-0 absolute opacity-0 z-10 pointer-events-none"></div>
 
-    <div class="bg-white w-72 absolute top-12 left-12 border-4 border-black p-4">
-      <h1>Draggle</h1>
-      <div class="relative">
-        <div class="w-full h-1 bg-gray-400 mt-3 "></div>
-        <div id="enemy-health-bar" class=" h-1 bg-green-500  absolute left-0  right-0 top-0"></div>
-      </div>
-    </div>
-    <div class="bg-white w-72 absolute top-80 right-12 border-4 border-black p-4">
-      <h1>Emby</h1>
-      <div class="relative">
-        <div class="w-full h-1 bg-gray-400 mt-3 "></div>
-        <div id="player-health-bar" class=" h-1 bg-green-500  absolute left-0  right-0 top-0"></div>
-      </div>
-    </div>
+
     <canvas id="game"></canvas>
-    <div
-      class="bg-white absolute bottom-0 divide-black divide-x-4 h-36 w-full border-t-4 border-black grid grid-cols-3">
-      <div class="col-span-2 grid grid-cols-2 grid-flow-row font-serif">
-        <button class="hover:bg-gray-100" id="attack-1">Tackle</button>
-        <button class="hover:bg-gray-100" id="attack-2">Attack</button>
+
+    <div id="user-interface" class="hidden">
+
+      <div class="bg-white w-72 absolute top-12 left-12 border-4 border-black p-4">
+        <h1>Draggle</h1>
+        <div class="relative">
+          <div class="w-full h-1 bg-gray-400 mt-3 "></div>
+          <div id="enemy-health-bar" class=" h-1 bg-green-500  absolute left-0  right-0 top-0"></div>
+        </div>
       </div>
-      <div class="col-span-1 bg-amber-100 grid place-items-center">
-        <h1 class="">Attack Type</h1>
+      <div class="bg-white w-72 absolute top-80 right-12 border-4 border-black p-4">
+        <h1>Emby</h1>
+        <div class="relative">
+          <div class="w-full h-1 bg-gray-400 mt-3 "></div>
+          <div id="player-health-bar" class=" h-1 bg-green-500  absolute left-0  right-0 top-0"></div>
+        </div>
+      </div>
+
+      <div
+        class="bg-white absolute bottom-0 divide-black divide-x-4 h-36 w-full border-t-4 border-black grid grid-cols-3">
+        <div id="dialog-box" class="absolute inset-0 bg-white p-4 hidden cursor-pointer"></div>
+        <div class="col-span-2 grid grid-cols-2 grid-flow-row font-serif" id="attack-box">
+        </div>
+        <div class="col-span-1 bg-amber-100 grid place-items-center">
+          <h1 id="attack-type">Attack Type</h1>
+        </div>
       </div>
     </div>
   </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

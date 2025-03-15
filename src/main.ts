@@ -1,4 +1,5 @@
 import { animate } from 'motion'
+import { handleBattle } from './batte'
 import { createBattleZones } from './battle-zones'
 import { createBoundaries } from './boundary'
 import { battleZonesData } from './data/battleZones'
@@ -80,45 +81,6 @@ function main() {
 			x: OFFSET.x,
 			y: OFFSET.y,
 		},
-	})
-
-	// Load battle zone image
-	const battleZoneImage = new Image()
-	battleZoneImage.src = '/public/battleBackground.png'
-	const battleBackgroundSprite = new Sprite({
-		image: battleZoneImage,
-		position: {
-			x: 0,
-			y: 0,
-		},
-	})
-
-	// Load Draggle image
-	const draggleImage = new Image()
-	draggleImage.src = '/public/draggleSprite.png'
-	const draggle = new Sprite({
-		image: draggleImage,
-		position: {
-			x: 800,
-			y: 100,
-		},
-		frames: { max: 4, hold: 15 },
-		animate: true,
-		isEnemy: true,
-	})
-
-	// Load Emby image
-	const embyImage = new Image()
-	embyImage.src = '/public/embySprite.png'
-	const emby = new Sprite({
-		image: embyImage,
-		position: {
-			x: 280,
-			y: 325,
-		},
-		frames: { max: 4, hold: 15 },
-		animate: true,
-		isEnemy: false,
 	})
 
 	// Set up a consistent 60 FPS loop
@@ -207,7 +169,7 @@ function main() {
 							ease: 'linear',
 							repeatType: 'mirror',
 							onComplete: () => {
-								battleGameLoop(0)
+								handleBattle(c, gameLoop, battle)
 								animate(overlappingDiv, { opacity: 0 })
 							},
 						},
@@ -330,26 +292,6 @@ function main() {
 		}
 	}
 
-	function battleAnimation(c: CanvasRenderingContext2D) {
-		console.log('battle')
-
-		battleBackgroundSprite.draw(c)
-		draggle.draw(c)
-		emby.draw(c)
-	}
-
-	function battleGameLoop(timestamp: number) {
-		if (!c) {
-			throw new Error('2D context not found')
-		}
-		requestAnimationFrame(battleGameLoop)
-		const deltaTime = timestamp - lastTime
-		if (deltaTime >= FRAME_INTERVAL) {
-			lastTime = timestamp - (deltaTime % FRAME_INTERVAL)
-			battleAnimation(c)
-		}
-	}
-
 	let mainAnimationId = 0
 	function gameLoop(timestamp: number) {
 		if (!c) {
@@ -369,37 +311,11 @@ function main() {
 
 	// Start the game loop once images are loaded
 	backgroundImage.onload = () => {
-		// requestAnimationFrame(gameLoop)
+		requestAnimationFrame(gameLoop)
 		// TODO: remove this line
-		battleGameLoop(0)
+		// battleGameLoop(0)
+		// handleBattle(c, gameLoop, battle)
 	}
-
-	const attack1Button = document.getElementById('attack-1') as HTMLButtonElement
-	const attack2Button = document.getElementById('attack-2') as HTMLButtonElement
-
-	attack1Button.addEventListener('click', () => {
-		console.log('Attack 1 clicked')
-
-		emby.attack({
-			attack: {
-				name: 'Tackle',
-				damage: 10,
-				type: 'Normal',
-			},
-			recipient: draggle,
-		})
-	})
-	attack2Button.addEventListener('click', () => {
-		console.log('Attack 2 clicked')
-		draggle.attack({
-			attack: {
-				name: 'Tackle',
-				damage: 10,
-				type: 'Normal',
-			},
-			recipient: emby,
-		})
-	})
 
 	window.addEventListener('keydown', (e) => {
 		const key = e.key

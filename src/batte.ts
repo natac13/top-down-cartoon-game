@@ -1,5 +1,6 @@
 import { animate } from 'motion'
 import { attacks } from './data/attacks'
+import { audio } from './data/audio'
 import { monsters } from './data/monsters'
 import { Monster, Sprite } from './sprite'
 
@@ -28,6 +29,8 @@ export function handleBattle(
 		'enemy-health-bar',
 	) as HTMLDivElement
 	const attackBox = document.getElementById('attack-box') as HTMLDivElement
+
+	audio.battle.play()
 
 	playerHealthBar.style.width = '100%'
 	enemyHealthBar.style.width = '100%'
@@ -110,12 +113,13 @@ export function handleBattle(
 								delay: 0.5,
 							},
 						)
+						audio.map.play()
 						animate(userInterfaceDiv, { opacity: 0, display: 'none' })
 					},
 				},
 			)
+			battle.initiated = false
 		})
-		battle.initiated = false
 	}
 
 	for (const attackButton of attackButtons) {

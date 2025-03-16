@@ -1,5 +1,6 @@
 import { animate } from 'motion'
 import type { Attack } from './data/attacks'
+import { audio } from './data/audio'
 
 interface SpriteFrames {
 	max: number
@@ -195,6 +196,7 @@ export class Monster extends Sprite {
 	}) {
 		const fireballImage = new Image()
 		fireballImage.src = '/public/fireball.png'
+		audio.fireballInit.play()
 
 		const fireball = new Sprite({
 			position: {
@@ -222,6 +224,7 @@ export class Monster extends Sprite {
 				onComplete: () => {
 					if (complete) return
 					complete = true
+					audio.fireballHit.play()
 					const healthBar = this.#getHealthBar()
 					animate(fireball, { opacity: 0 }, { duration: 0.2 })
 					animate(
@@ -288,6 +291,7 @@ export class Monster extends Sprite {
 			],
 			{
 				onComplete: () => {
+					audio.tackleHit.play()
 					const healthBar = this.#getHealthBar()
 					animate(
 						healthBar,
@@ -326,5 +330,7 @@ export class Monster extends Sprite {
 		dialogBox.innerHTML = `${this.name} fainted!`
 		animate(this.position, { y: this.position.y + 20 })
 		animate(this, { opacity: 0 })
+		audio.victory.play()
+		audio.battle.stop()
 	}
 }

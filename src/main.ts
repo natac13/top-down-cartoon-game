@@ -2,6 +2,7 @@ import { animate } from 'motion'
 import { handleBattle } from './batte'
 import { createBattleZones } from './battle-zones'
 import { createBoundaries } from './boundary'
+import { audio } from './data/audio'
 import { battleZonesData } from './data/battleZones'
 import { collisions } from './data/collisions'
 import { rectangularCollision } from './rectangular-collision'
@@ -159,6 +160,8 @@ function main() {
 					Math.random() < BATTLE_RATE
 				) {
 					window.cancelAnimationFrame(animationId)
+					audio.map.stop()
+					audio.battleInit.play()
 
 					animate(
 						overlappingDiv,
@@ -298,7 +301,6 @@ function main() {
 			throw new Error('2D context not found')
 		}
 		mainAnimationId = requestAnimationFrame(gameLoop)
-		console.log(`Animation ID: ${mainAnimationId}`)
 		const deltaTime = timestamp - lastTime
 
 		if (deltaTime >= FRAME_INTERVAL) {
@@ -356,6 +358,13 @@ function main() {
 				keys.d.pressed = false
 				break
 		}
+	})
+
+	let clicked = false
+	window.addEventListener('click', () => {
+		if (clicked) return
+		clicked = true
+		audio.map.play()
 	})
 }
 
